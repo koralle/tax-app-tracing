@@ -6,7 +6,7 @@
  * [ ] サーバーやルーティングの設定が気になる
  * [o] ステータスコードの指定方法が気になる
  * [o] express.json()のドキュメントを読んでおく
- * [ ] APIに対するテスト
+ * [o] APIに対するテスト
  */
 import express from 'express';
 
@@ -14,15 +14,16 @@ const app = express();
 
 app.use(express.json());
 
-app.get('/', (_, res) => {
-  res.send('Hello World!');
-});
+type CalcInput = {
+  yearsOfService: number;
+  isDisability: boolean;
+  isOfficer: boolean;
+  severancePay: number;
+};
 
-app.post('/check-post', (_, res) => {
-  res.json({
-    message: 'Hello, JSON!',
-  });
-});
+const calcTax = (_: CalcInput): number => {
+  return 10000;
+};
 
 app.post('/check-body', (req, res) => {
   console.dir(req.body);
@@ -31,9 +32,9 @@ app.post('/check-body', (req, res) => {
   });
 });
 
-app.post('/check-status-code', (_, res) => {
-  res.status(500).json({
-    message: 'Hello, JSON!',
+app.post('/calc-tax', (req, res) => {
+  res.json({
+    tax: calcTax(req.body as CalcInput),
   });
 });
 
