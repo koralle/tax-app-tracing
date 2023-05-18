@@ -101,23 +101,18 @@ export const calcTaxWithheld = ({ incomeTaxBase }: CalcTaxWithheldInput) => {
   return Math.floor((incomeTaxBase * 1021) / 1000);
 };
 
-export type CalcIncomeTaxForSeverancePayInput = {
-  yearsOfService: number;
-  isDisability: boolean;
-  isOfficer: boolean;
-  severancePay: number;
-};
+export type CalcIncomeTaxForSeverancePayInput = z.infer<typeof calcSeverancePayTaxInputSchema>;
 
-export const calcIncomeTaxForSeverancePay = (input: CalcIncomeTaxForSeverancePayInput) => {
-  let validatedInput;
-
+const validateInput = (input: CalcIncomeTaxForSeverancePayInput) => {
   try {
-    validatedInput = calcSeverancePayTaxInputSchema.parse(input);
+    return calcSeverancePayTaxInputSchema.parse(input);
   } catch (e) {
     throw new Error('Invalid argument.', { cause: e });
   }
+};
 
-  const { yearsOfService, isDisability, isOfficer, severancePay } = validatedInput;
+export const calcIncomeTaxForSeverancePay = (input: CalcIncomeTaxForSeverancePayInput) => {
+  const { yearsOfService, isDisability, isOfficer, severancePay } = validateInput(input);
 
   const retirementIncomeDeduction = calcRetirementIncomeDeduction({ yearsOfService, isDisability });
 
