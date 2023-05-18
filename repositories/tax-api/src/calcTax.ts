@@ -19,6 +19,11 @@ export type CalcRetirementIncomeDeductionInput = {
   // 障害者になったことに直接起因して退職したか
   isDisability: boolean;
 };
+
+/**
+ * @description 退職所得控除額を計算する
+ * @returns 退職所得控除額
+ */
 export const calcRetirementIncomeDeduction = ({ yearsOfService, isDisability }: CalcRetirementIncomeDeductionInput) => {
   let deduction: number;
   if (yearsOfService === 1) {
@@ -42,6 +47,10 @@ export type CalcTaxableRetirementIncomeInput = {
   isOfficer: boolean;
 };
 
+/**
+ * @description 課税退職所得金額を計算する
+ * @returns 課税退職所得金額
+ */
 export const calcTaxableRetirementIncome = ({
   yearsOfService,
   severancePay,
@@ -69,6 +78,10 @@ export type CalcIncomeTaxBaseInput = {
   taxableRetirementIncome: number;
 };
 
+/**
+ * @description  基準所得税額を計算する
+ * @returns 基準所得税額
+ */
 export const calcIncomeTaxBase = ({ taxableRetirementIncome: taxableRetirementIncome }: CalcIncomeTaxBaseInput) => {
   const roundDown = (val: number, nearest = 1000) => Math.floor(val / nearest) * nearest;
 
@@ -97,6 +110,10 @@ export type CalcTaxWithheldInput = {
   incomeTaxBase: number;
 };
 
+/**
+ * @description 源泉徴収税額を計算する
+ * @returns 源泉徴収税額
+ */
 export const calcTaxWithheld = ({ incomeTaxBase }: CalcTaxWithheldInput) => {
   return Math.floor((incomeTaxBase * 1021) / 1000);
 };
@@ -111,6 +128,10 @@ const validateInput = (input: CalcIncomeTaxForSeverancePayInput) => {
   }
 };
 
+/**
+ * @description 退職金にかかる所得税額を計算する
+ * @returns 退職金にかかる所得税額
+ */
 export const calcIncomeTaxForSeverancePay = (input: CalcIncomeTaxForSeverancePayInput) => {
   const { yearsOfService, isDisability, isOfficer, severancePay } = validateInput(input);
 
