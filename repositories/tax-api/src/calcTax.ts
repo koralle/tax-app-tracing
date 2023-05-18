@@ -49,3 +49,31 @@ export const calcTaxableRetirementIncome = ({
 
   return roundDown(Math.max(severancePay - deduction, 0) / 2);
 };
+
+type CalcIncomeTaxBaseInput = {
+  taxableRetirementIncome: number;
+};
+
+export const calcIncomeTaxBase = ({ taxableRetirementIncome: taxableRetirementIncome }: CalcIncomeTaxBaseInput) => {
+  const roundDown = (val: number, nearest = 1000) => Math.floor(val / nearest) * nearest;
+
+  const roundedTaxableRetirementIncome = roundDown(taxableRetirementIncome);
+
+  if (1000 <= roundedTaxableRetirementIncome && roundedTaxableRetirementIncome <= 1_949_000) {
+    return roundedTaxableRetirementIncome * 0.05;
+  } else if (1_950_000 <= roundedTaxableRetirementIncome && roundedTaxableRetirementIncome <= 3_299_000) {
+    return roundedTaxableRetirementIncome * 0.1 - 97_500;
+  } else if (3_300_000 <= roundedTaxableRetirementIncome && roundedTaxableRetirementIncome <= 6_949_000) {
+    return roundedTaxableRetirementIncome * 0.2 - 427_500;
+  } else if (6_950_000 <= roundedTaxableRetirementIncome && roundedTaxableRetirementIncome <= 8_999_000) {
+    return roundedTaxableRetirementIncome * 0.23 - 636_000;
+  } else if (9_000_000 <= roundedTaxableRetirementIncome && roundedTaxableRetirementIncome <= 17_999_000) {
+    return roundedTaxableRetirementIncome * 0.33 - 1_536_000;
+  } else if (18_000_000 <= roundedTaxableRetirementIncome && roundedTaxableRetirementIncome <= 39_999_000) {
+    return roundedTaxableRetirementIncome * 0.4 - 2_796_000;
+  } else if (roundedTaxableRetirementIncome >= 40_000_000) {
+    return roundedTaxableRetirementIncome * 0.45 - 4_796_000;
+  }
+
+  return 0;
+};
