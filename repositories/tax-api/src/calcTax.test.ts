@@ -1,5 +1,8 @@
 import { describe } from 'node:test';
 
+import type {
+  CalcIncomeTaxForSeverancePayInput,
+} from './calcTax';
 import {
   calcIncomeTaxBase,
   calcIncomeTaxForSeverancePay,
@@ -340,13 +343,7 @@ describe('退職金の所得税', () => {
       isOfficer,
       severancePay,
       expected,
-    }: {
-      yearsOfService: number;
-      isDisability: boolean;
-      isOfficer: boolean;
-      severancePay: number;
-      expected: number;
-    }) => {
+    }: CalcIncomeTaxForSeverancePayInput & { expected: ReturnType<typeof calcIncomeTaxForSeverancePay> }) => {
       const tax = calcIncomeTaxForSeverancePay({
         yearsOfService,
         isDisability,
@@ -357,4 +354,228 @@ describe('退職金の所得税', () => {
       expect(tax).toBe(expected);
     }
   );
+
+  describe('入力値バリデーション', () => {
+    describe('勤続年数は1以上100以下の整数であること', () => {
+      test.each`
+        yearsOfService
+        ${-1}
+        ${0}
+        ${101}
+        ${10.5}
+        ${null}
+        ${undefined}
+        ${'some string'}
+      `(
+        '勤続年数$yearsOfService年はError',
+        ({ yearsOfService }: Pick<CalcIncomeTaxForSeverancePayInput, 'yearsOfService'>) => {
+          expect(() =>
+            calcIncomeTaxForSeverancePay({
+              yearsOfService,
+              isDisability: false,
+              isOfficer: false,
+              severancePay: 100_000_000,
+            })
+          ).toThrowError(/^Invalid argument.$/i);
+        }
+      );
+
+      test.each`
+        yearsOfService | expected
+        ${1}           | ${39_991_549}
+        ${100}         | ${4_496_484}
+      `(
+        '勤続年数$yearsOfService年は成功',
+        ({
+          yearsOfService,
+          expected,
+        }: Pick<CalcIncomeTaxForSeverancePayInput, 'yearsOfService'> & {
+          expected: ReturnType<typeof calcIncomeTaxForSeverancePay>;
+        }) => {
+          expect(
+            calcIncomeTaxForSeverancePay({
+              yearsOfService,
+              isDisability: false,
+              isOfficer: false,
+              severancePay: 100_000_000,
+            })
+          ).toBe(expected);
+        }
+      );
+    });
+
+    describe('退職金は0以上1兆以下の整数であること', () => {
+      test.each`
+        severancePay
+        ${-1}
+        ${1_000_000_000_001}
+        ${8_000_000.1}
+      `('退職金$severancePay円はError', ({ severancePay }: Pick<CalcIncomeTaxForSeverancePayInput, 'severancePay'>) => {
+        expect(() =>
+          calcIncomeTaxForSeverancePay({
+            yearsOfService: 5,
+            isDisability: false,
+            isOfficer: false,
+            severancePay,
+          })
+        ).toThrowError(/^Invalid argument.$/i);
+      });
+
+      test.each`
+        severancePay         | expected
+        ${0}                 | ${0}
+        ${1_000_000_000_000} | ${459443495209}
+      `(
+        '退職金$severancePay円は成功',
+        ({
+          severancePay,
+          expected,
+        }: Pick<CalcIncomeTaxForSeverancePayInput, 'severancePay'> & {
+          expected: ReturnType<typeof calcIncomeTaxForSeverancePay>;
+        }) => {
+          expect(
+            calcIncomeTaxForSeverancePay({
+              yearsOfService: 5,
+              isDisability: false,
+              isOfficer: false,
+              severancePay,
+            })
+          ).toBe(expected);
+        }
+      );
+    });
+
+    describe('不正な値の場合', () => {
+      test.each`
+        yearsOfService
+        ${null}
+        ${undefined}
+        ${'some string'}
+      `(
+        '勤続年数:$yearsOfServiceはError',
+        ({ yearsOfService, isDisability, isOfficer, severancePay }: CalcIncomeTaxForSeverancePayInput) => {
+          expect(() =>
+            calcIncomeTaxForSeverancePay({ yearsOfService, isDisability, isOfficer, severancePay })
+          ).toThrowError(/^Invalid argument.$/i);
+        }
+      );
+
+      test.each`
+        isDisability
+        ${null}
+        ${undefined}
+        ${'some string'}
+      `(
+        '障害者となったことに直接起因して退職したか:$isDisabilityはError',
+        ({ yearsOfService, isDisability, isOfficer, severancePay }: CalcIncomeTaxForSeverancePayInput) => {
+          expect(() =>
+            calcIncomeTaxForSeverancePay({ yearsOfService, isDisability, isOfficer, severancePay })
+          ).toThrowError(/^Invalid argument.$/i);
+        }
+      );
+
+      test.each`
+        isOfficer
+        ${null}
+        ${undefined}
+        ${'some string'}
+      `(
+        '役員等かどうか:$isOfficerはError',
+        ({ yearsOfService, isDisability, isOfficer, severancePay }: CalcIncomeTaxForSeverancePayInput) => {
+          expect(() =>
+            calcIncomeTaxForSeverancePay({ yearsOfService, isDisability, isOfficer, severancePay })
+          ).toThrowError(/^Invalid argument.$/i);
+        }
+      );
+
+      test.each`
+        severancePay
+        ${null}
+        ${undefined}
+        ${'some string'}
+      `(
+        '退職金:$severancePayはError',
+        ({ yearsOfService, isDisability, isOfficer, severancePay }: CalcIncomeTaxForSeverancePayInput) => {
+          expect(() =>
+            calcIncomeTaxForSeverancePay({ yearsOfService, isDisability, isOfficer, severancePay })
+          ).toThrowError(/^Invalid argument.$/i);
+        }
+      );
+    });
+
+    describe('プロパティが未定義の場合', () => {
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      /* eslint-disable @typescript-eslint/no-unsafe-argument */
+      test('勤続年数が未定義の場合はError', () => {
+        expect(() =>
+          calcIncomeTaxForSeverancePay({
+            isDisability: false,
+            isOfficer: false,
+            severancePay: 100_000_000,
+          } as any)
+        ).toThrowError(/^Invalid argument.$/i);
+      });
+
+      test('障害者となったことに直接起因して退職したかが未定義の場合はError', () => {
+        expect(() =>
+          calcIncomeTaxForSeverancePay({
+            yearsOfService: 5,
+            isOfficer: false,
+            severancePay: 100_000_000,
+          } as any)
+        ).toThrowError(/^Invalid argument.$/i);
+      });
+
+      test('役員かどうかが未定義の場合はError', () => {
+        expect(() =>
+          calcIncomeTaxForSeverancePay({
+            yearsOfService: 5,
+            isDisability: false,
+            severancePay: 100_000_000,
+          } as any)
+        ).toThrowError(/^Invalid argument.$/i);
+      });
+
+      test('退職金が未定義の場合はError', () => {
+        expect(() =>
+          calcIncomeTaxForSeverancePay({
+            yearsOfService: 5,
+            isDisability: false,
+            isOfficer: false,
+          } as any)
+        ).toThrowError(/^Invalid argument.$/i);
+      });
+    });
+
+    describe('不正なオブジェクトの場合', () => {
+      test('余計なプロパティが含まれている場合はError', () => {
+        expect(() =>
+          calcIncomeTaxForSeverancePay({
+            yearsOfService: 5,
+            isDisability: false,
+            isOfficer: false,
+            severancePay: 100_000_000,
+            hoge: 'fuga',
+          } as any)
+        ).toThrowError(/^Invalid argument.$/i);
+      });
+
+      test('空オブジェクトの場合はError', () => {
+        expect(() => calcIncomeTaxForSeverancePay({} as any)).toThrowError(/^Invalid argument.$/i);
+      });
+
+      test('オブジェクトではない場合はError', () => {
+        expect(() => calcIncomeTaxForSeverancePay(0 as any)).toThrowError(/^Invalid argument.$/i);
+      });
+
+      test('undefinedの場合はError', () => {
+        expect(() => calcIncomeTaxForSeverancePay(undefined as any)).toThrowError(/^Invalid argument.$/i);
+      });
+
+      test('nullの場合はError', () => {
+        expect(() => calcIncomeTaxForSeverancePay(null as any)).toThrowError(/^Invalid argument.$/i);
+      });
+    });
+    /* eslint-enable */
+  });
 });
