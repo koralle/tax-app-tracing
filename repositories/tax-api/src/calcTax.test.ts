@@ -1,7 +1,11 @@
 import { describe } from 'node:test';
 
 import type {
+  CalcIncomeTaxBaseInput,
   CalcIncomeTaxForSeverancePayInput,
+  CalcRetirementIncomeDeductionInput,
+  CalcTaxableRetirementIncomeInput,
+  CalcTaxWithheldInput,
 } from './calcTax';
 import {
   calcIncomeTaxBase,
@@ -19,7 +23,12 @@ describe('退職所得控除額', () => {
         ${1}           | ${800_000}
       `(
         '勤続年数$yearsOfService年 -> $expected円',
-        ({ yearsOfService, expected }: { yearsOfService: number; expected: number }) => {
+        ({
+          yearsOfService,
+          expected,
+        }: Pick<CalcRetirementIncomeDeductionInput, 'yearsOfService'> & {
+          expected: ReturnType<typeof calcRetirementIncomeDeduction>;
+        }) => {
           const deduction = calcRetirementIncomeDeduction({
             // 勤続年数
             yearsOfService,
@@ -38,7 +47,12 @@ describe('退職所得控除額', () => {
         ${1}           | ${1_800_000}
       `(
         '勤続年数$yearsOfService年 -> $expected円',
-        ({ yearsOfService, expected }: { yearsOfService: number; expected: number }) => {
+        ({
+          yearsOfService,
+          expected,
+        }: Pick<CalcRetirementIncomeDeductionInput, 'yearsOfService'> & {
+          expected: ReturnType<typeof calcRetirementIncomeDeduction>;
+        }) => {
           const deduction = calcRetirementIncomeDeduction({
             // 勤続年数
             yearsOfService,
@@ -61,7 +75,12 @@ describe('退職所得控除額', () => {
         ${19}          | ${7_600_000}
       `(
         '勤続年数$yearsOfService年 -> $expected円',
-        ({ yearsOfService, expected }: { yearsOfService: number; expected: number }) => {
+        ({
+          yearsOfService,
+          expected,
+        }: Pick<CalcRetirementIncomeDeductionInput, 'yearsOfService'> & {
+          expected: ReturnType<typeof calcRetirementIncomeDeduction>;
+        }) => {
           const deduction = calcRetirementIncomeDeduction({
             // 勤続年数
             yearsOfService,
@@ -82,7 +101,12 @@ describe('退職所得控除額', () => {
         ${19}          | ${8_600_000}
       `(
         '勤続年数$yearsOfService年 -> $expected円',
-        ({ yearsOfService, expected }: { yearsOfService: number; expected: number }) => {
+        ({
+          yearsOfService,
+          expected,
+        }: Pick<CalcRetirementIncomeDeductionInput, 'yearsOfService'> & {
+          expected: ReturnType<typeof calcRetirementIncomeDeduction>;
+        }) => {
           const deduction = calcRetirementIncomeDeduction({
             // 勤続年数
             yearsOfService,
@@ -105,7 +129,12 @@ describe('退職所得控除額', () => {
         ${30}          | ${15_000_000}
       `(
         '勤続年数$yearsOfService年 -> $expected円',
-        ({ yearsOfService, expected }: { yearsOfService: number; expected: number }) => {
+        ({
+          yearsOfService,
+          expected,
+        }: Pick<CalcRetirementIncomeDeductionInput, 'yearsOfService'> & {
+          expected: ReturnType<typeof calcRetirementIncomeDeduction>;
+        }) => {
           const deduction = calcRetirementIncomeDeduction({
             // 勤続年数
             yearsOfService,
@@ -126,7 +155,12 @@ describe('退職所得控除額', () => {
         ${30}          | ${16_000_000}
       `(
         '勤続年数$yearsOfService年 -> $expected円',
-        ({ yearsOfService, expected }: { yearsOfService: number; expected: number }) => {
+        ({
+          yearsOfService,
+          expected,
+        }: Pick<CalcRetirementIncomeDeductionInput, 'yearsOfService'> & {
+          expected: ReturnType<typeof calcRetirementIncomeDeduction>;
+        }) => {
           const deduction = calcRetirementIncomeDeduction({
             // 勤続年数
             yearsOfService,
@@ -161,13 +195,7 @@ describe('課税退職所得金額', () => {
         deduction,
         isOfficer,
         expected,
-      }: {
-        yearsOfService: number;
-        severancePay: number;
-        deduction: number;
-        isOfficer: boolean;
-        expected: number;
-      }) => {
+      }: CalcTaxableRetirementIncomeInput & { expected: ReturnType<typeof calcTaxableRetirementIncome> }) => {
         const targetIncome = calcTaxableRetirementIncome({
           yearsOfService,
           severancePay,
@@ -194,13 +222,7 @@ describe('課税退職所得金額', () => {
         deduction,
         isOfficer,
         expected,
-      }: {
-        yearsOfService: number;
-        severancePay: number;
-        deduction: number;
-        isOfficer: boolean;
-        expected: number;
-      }) => {
+      }: CalcTaxableRetirementIncomeInput & { expected: ReturnType<typeof calcTaxableRetirementIncome> }) => {
         const targetIncome = calcTaxableRetirementIncome({
           yearsOfService,
           severancePay,
@@ -229,13 +251,7 @@ describe('課税退職所得金額', () => {
           deduction,
           isOfficer,
           expected,
-        }: {
-          yearsOfService: number;
-          severancePay: number;
-          deduction: number;
-          isOfficer: boolean;
-          expected: number;
-        }) => {
+        }: CalcTaxableRetirementIncomeInput & { expected: ReturnType<typeof calcTaxableRetirementIncome> }) => {
           const targetIncome = calcTaxableRetirementIncome({
             yearsOfService,
             severancePay,
@@ -262,13 +278,7 @@ describe('課税退職所得金額', () => {
           deduction,
           isOfficer,
           expected,
-        }: {
-          yearsOfService: number;
-          severancePay: number;
-          deduction: number;
-          isOfficer: boolean;
-          expected: number;
-        }) => {
+        }: CalcTaxableRetirementIncomeInput & { expected: ReturnType<typeof calcTaxableRetirementIncome> }) => {
           const targetIncome = calcTaxableRetirementIncome({
             yearsOfService,
             severancePay,
@@ -302,7 +312,10 @@ describe('基準所得税額', () => {
     ${40_000_000}           | ${13_204_000}
   `(
     '課税退職所得金額$taxableRetirementIncome円 -> $expected円',
-    ({ taxableRetirementIncome, expected }: { taxableRetirementIncome: number; expected: number }) => {
+    ({
+      taxableRetirementIncome,
+      expected,
+    }: CalcIncomeTaxBaseInput & { expected: ReturnType<typeof calcIncomeTaxBase> }) => {
       expect(calcIncomeTaxBase({ taxableRetirementIncome })).toBe(expected);
     }
   );
@@ -317,7 +330,7 @@ describe('源泉徴収税額', () => {
     ${1000}       | ${1021}
   `(
     '基準所得税額$incomeTaxBase円 -> $expected円',
-    ({ incomeTaxBase, expected }: { incomeTaxBase: number; expected: number }) => {
+    ({ incomeTaxBase, expected }: CalcTaxWithheldInput & { expected: ReturnType<typeof calcTaxWithheld> }) => {
       expect(calcTaxWithheld({ incomeTaxBase })).toBe(expected);
     }
   );

@@ -13,7 +13,7 @@ const calcSeverancePayTaxInputSchema = z
   })
   .strict();
 
-type CalcRetirementIncomeDeductionInput = {
+export type CalcRetirementIncomeDeductionInput = {
   // 勤続年数
   yearsOfService: number;
   // 障害者になったことに直接起因して退職したか
@@ -35,7 +35,7 @@ export const calcRetirementIncomeDeduction = ({ yearsOfService, isDisability }: 
   return deduction;
 };
 
-type CalcTaxableRetirementIncomeInput = {
+export type CalcTaxableRetirementIncomeInput = {
   yearsOfService: number;
   severancePay: number;
   deduction: number;
@@ -65,7 +65,7 @@ export const calcTaxableRetirementIncome = ({
   return roundDown(Math.max(severancePay - deduction, 0) / 2);
 };
 
-type CalcIncomeTaxBaseInput = {
+export type CalcIncomeTaxBaseInput = {
   taxableRetirementIncome: number;
 };
 
@@ -93,7 +93,7 @@ export const calcIncomeTaxBase = ({ taxableRetirementIncome: taxableRetirementIn
   return 0;
 };
 
-type CalcTaxWithheldInput = {
+export type CalcTaxWithheldInput = {
   incomeTaxBase: number;
 };
 
