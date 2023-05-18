@@ -77,3 +77,11 @@ export const calcIncomeTaxBase = ({ taxableRetirementIncome: taxableRetirementIn
 
   return 0;
 };
+
+type CalcTaxWithheldInput = {
+  incomeTaxBase: number;
+};
+
+export const calcTaxWithheld = ({ incomeTaxBase }: CalcTaxWithheldInput) => {
+  return Math.floor((incomeTaxBase * 1021) / 1000);
+};

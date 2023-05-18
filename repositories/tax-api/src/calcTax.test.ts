@@ -3,7 +3,8 @@ import { describe } from 'node:test';
 import {
   calcRetirementIncomeDeduction,
   calcTaxableRetirementIncome,
-  calcIncomeTaxBase
+  calcIncomeTaxBase,
+  calcTaxWithheld,
 } from './calcTax';
 
 describe('退職所得控除額', () => {
@@ -299,6 +300,21 @@ describe('基準所得税額', () => {
     '課税退職所得金額$taxableRetirementIncome円 -> $expected円',
     ({ taxableRetirementIncome, expected }: { taxableRetirementIncome: number; expected: number }) => {
       expect(calcIncomeTaxBase({ taxableRetirementIncome })).toBe(expected);
+    }
+  );
+});
+
+describe('源泉徴収税額', () => {
+  test.each`
+    incomeTaxBase | expected
+    ${0}          | ${0}
+    ${50}         | ${51}
+    ${120}        | ${122}
+    ${1000}       | ${1021}
+  `(
+    '基準所得税額$incomeTaxBase円 -> $expected円',
+    ({ incomeTaxBase, expected }: { incomeTaxBase: number; expected: number }) => {
+      expect(calcTaxWithheld({ incomeTaxBase })).toBe(expected);
     }
   );
 });
