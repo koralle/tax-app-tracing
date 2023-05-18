@@ -19,3 +19,33 @@ export const calcRetirementIncomeDeduction = ({ yearsOfService, isDisability }: 
   }
   return deduction;
 };
+
+type CalcTaxableRetirementIncomeInput = {
+  yearsOfService: number;
+  severancePay: number;
+  deduction: number;
+  isOfficer: boolean;
+};
+
+export const calcTaxableRetirementIncome = ({
+  yearsOfService,
+  severancePay,
+  deduction,
+  isOfficer,
+}: CalcTaxableRetirementIncomeInput) => {
+  const roundDown = (val: number, nearest = 1000) => Math.floor(val / nearest) * nearest;
+
+  if (yearsOfService >= 6) {
+    return roundDown(Math.max(severancePay - deduction, 0) / 2);
+  }
+
+  if (isOfficer) {
+    return roundDown(Math.max(severancePay - deduction, 0));
+  }
+
+  if (severancePay - deduction > 300_0000) {
+    return 150_0000 + roundDown(severancePay - deduction - 300_0000);
+  }
+
+  return roundDown(Math.max(severancePay - deduction, 0) / 2);
+};

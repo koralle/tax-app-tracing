@@ -1,6 +1,6 @@
 import { describe } from 'node:test';
 
-import { calcRetirementIncomeDeduction } from './calcTax';
+import { calcRetirementIncomeDeduction, calcTaxableRetirementIncome } from './calcTax';
 
 describe('退職所得控除額', () => {
   describe('勤続年数が1年の場合', () => {
@@ -126,6 +126,148 @@ describe('退職所得控除額', () => {
           });
 
           expect(deduction).toBe(expected);
+        }
+      );
+    });
+  });
+});
+
+describe('課税退職所得金額', () => {
+  describe('勤続年数が6年以上の場合', () => {
+    test.each`
+      yearsOfService | severancePay | deduction   | isOfficer | expected
+      ${6}           | ${300_0000}  | ${240_0000} | ${false}  | ${30_0000}
+      ${6}           | ${300_0000}  | ${240_0000} | ${true}   | ${30_0000}
+      ${6}           | ${300_1999}  | ${240_0000} | ${false}  | ${30_0000}
+      ${6}           | ${300_1999}  | ${240_0000} | ${true}   | ${30_0000}
+      ${6}           | ${300_2000}  | ${240_0000} | ${false}  | ${30_1000}
+      ${6}           | ${300_2000}  | ${240_0000} | ${true}   | ${30_1000}
+      ${6}           | ${100_0000}  | ${240_0000} | ${false}  | ${0}
+      ${6}           | ${100_0000}  | ${240_0000} | ${true}   | ${0}
+    `(
+      '勤続年数$yearsOfService年, 退職金$severancePay円, 退職所得控除額$deduction円, 役員等$isOfficer -> $expected円',
+      ({
+        yearsOfService,
+        severancePay,
+        deduction,
+        isOfficer,
+        expected,
+      }: {
+        yearsOfService: number;
+        severancePay: number;
+        deduction: number;
+        isOfficer: boolean;
+        expected: number;
+      }) => {
+        const targetIncome = calcTaxableRetirementIncome({
+          yearsOfService,
+          severancePay,
+          deduction,
+          isOfficer,
+        });
+
+        expect(targetIncome).toBe(expected);
+      }
+    );
+  });
+  describe('役員等で勤続年数が5年以下の場合', () => {
+    test.each`
+      yearsOfService | severancePay | deduction   | isOfficer | expected
+      ${5}           | ${300_0000}  | ${200_0000} | ${true}   | ${100_0000}
+      ${5}           | ${300_0999}  | ${200_0000} | ${true}   | ${100_0000}
+      ${5}           | ${300_1000}  | ${200_0000} | ${true}   | ${100_1000}
+      ${5}           | ${100_0000}  | ${200_0000} | ${true}   | ${0}
+    `(
+      '勤続年数$yearsOfService年, 退職金$severancePay円, 退職所得控除額$deduction円, 役員等$isOfficer -> $expected円',
+      ({
+        yearsOfService,
+        severancePay,
+        deduction,
+        isOfficer,
+        expected,
+      }: {
+        yearsOfService: number;
+        severancePay: number;
+        deduction: number;
+        isOfficer: boolean;
+        expected: number;
+      }) => {
+        const targetIncome = calcTaxableRetirementIncome({
+          yearsOfService,
+          severancePay,
+          deduction,
+          isOfficer,
+        });
+
+        expect(targetIncome).toBe(expected);
+      }
+    );
+  });
+  describe('役員等以外で勤続年数が5年以下の場合', () => {
+    describe('控除後の金額が300万円以下の場合', () => {
+      test.each`
+        yearsOfService | severancePay | deduction   | isOfficer | expected
+        ${5}           | ${300_0000}  | ${200_0000} | ${false}  | ${50_0000}
+        ${5}           | ${500_0000}  | ${200_0000} | ${false}  | ${150_0000}
+        ${5}           | ${300_1999}  | ${200_0000} | ${false}  | ${50_0000}
+        ${5}           | ${300_2000}  | ${200_0000} | ${false}  | ${50_1000}
+        ${5}           | ${100_0000}  | ${200_0000} | ${false}  | ${0}
+      `(
+        '勤続年数$yearsOfService年, 退職金$severancePay円, 退職所得控除額$deduction円 -> $expected円',
+        ({
+          yearsOfService,
+          severancePay,
+          deduction,
+          isOfficer,
+          expected,
+        }: {
+          yearsOfService: number;
+          severancePay: number;
+          deduction: number;
+          isOfficer: boolean;
+          expected: number;
+        }) => {
+          const targetIncome = calcTaxableRetirementIncome({
+            yearsOfService,
+            severancePay,
+            deduction,
+            isOfficer,
+          });
+
+          expect(targetIncome).toBe(expected);
+        }
+      );
+    });
+
+    describe('控除後の金額が300万円を超える場合', () => {
+      test.each`
+        yearsOfService | severancePay | deduction   | isOfficer | expected
+        ${5}           | ${600_0000}  | ${200_0000} | ${false}  | ${250_0000}
+        ${5}           | ${600_1999}  | ${200_0000} | ${false}  | ${250_1000}
+        ${5}           | ${600_2000}  | ${200_0000} | ${false}  | ${250_2000}
+      `(
+        '勤続年数$yearsOfService年, 退職金$severancePay円, 退職所得控除額$deduction円 -> $expected円',
+        ({
+          yearsOfService,
+          severancePay,
+          deduction,
+          isOfficer,
+          expected,
+        }: {
+          yearsOfService: number;
+          severancePay: number;
+          deduction: number;
+          isOfficer: boolean;
+          expected: number;
+        }) => {
+          const targetIncome = calcTaxableRetirementIncome({
+            yearsOfService,
+            severancePay,
+            deduction,
+            isOfficer,
+          });
+
+          expect(targetIncome).toBe(expected);
         }
       );
     });
