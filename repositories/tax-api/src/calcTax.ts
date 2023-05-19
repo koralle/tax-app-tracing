@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const calcSeverancePayTaxInputSchema = z
+export const calcSeverancePayTaxInputSchema = z
   .object({
     // 勤続年数
     yearsOfService: z.number().int().gte(1).lte(100),
